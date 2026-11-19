@@ -194,10 +194,6 @@ body {
 }
 .check-item:last-child, .check-item:nth-last-child(2):nth-child(odd) { border-bottom: none; }
 .check-name { display: flex; align-items: center; gap: 10px; color: var(--ink); }
-.check-name::before {
-  content: ""; width: 16px; height: 16px; flex: 0 0 16px;
-  border: 1.5px solid #cbd2dc; border-radius: 4px;
-}
 .status-tag { font-size: 11.5px; color: var(--amber); background: var(--amber-soft); padding: 3px 9px; border-radius: 20px; }
 
 /* 表格 */
@@ -259,3 +255,65 @@ tbody tr:hover td { background: #fafbfd; }
   .main { padding: 24px 18px; }
   .stats, .cards, .checklist { grid-template-columns: 1fr; }
 }
+
+/* ===== 可点击清单按钮 & 详情弹窗 ===== */
+.check-item .check-dot {
+  width: 16px; height: 16px; flex: 0 0 16px;
+  border: 1.5px solid #cbd2dc; border-radius: 4px; position: relative;
+}
+.check-dot.done { background: var(--teal); border-color: var(--teal); }
+.check-dot.done::after {
+  content: ""; position: absolute; left: 4px; top: 1px;
+  width: 4px; height: 8px; border: solid #fff;
+  border-width: 0 2px 2px 0; transform: rotate(45deg);
+}
+.check-btn {
+  background: transparent; border: none; width: 100%;
+  text-align: left; font: inherit; cursor: pointer;
+  border-bottom: 1px dashed var(--line);
+  transition: background .12s;
+}
+.check-btn:hover { background: #f7f9fc; }
+.check-open {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 12.5px; color: var(--blue); font-weight: 600;
+  white-space: nowrap;
+}
+.check-open svg { width: 14px; height: 14px; }
+
+/* 弹窗 */
+.modal { display: none; position: fixed; inset: 0; z-index: 100; align-items: center; justify-content: center; padding: 24px; }
+.modal.show { display: flex; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(16, 24, 40, .45); backdrop-filter: blur(2px); }
+.modal-dialog {
+  position: relative; width: 100%; max-width: 640px; max-height: 84vh;
+  background: #fff; border-radius: 16px; overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: 0 24px 60px rgba(16,24,40,.22);
+  animation: modalIn .18s ease-out;
+}
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.modal-head { position: relative; padding: 24px 28px 18px; border-bottom: 1px solid var(--line); }
+.modal-eyebrow { font-size: 12px; font-weight: 600; color: var(--teal); margin-bottom: 8px; }
+.modal-title { font-size: 19px; font-weight: 650; line-height: 1.45; color: var(--ink); padding-right: 36px; }
+.modal-close {
+  position: absolute; top: 20px; right: 20px;
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--line);
+  background: #fff; color: var(--ink-3); cursor: pointer;
+  display: grid; place-items: center;
+}
+.modal-close:hover { background: var(--bg); color: var(--ink); }
+.modal-close svg { width: 16px; height: 16px; }
+.modal-body { padding: 22px 28px 26px; overflow-y: auto; }
+.modal-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.modal-meta span { font-size: 11.5px; color: var(--ink-2); background: var(--bg); padding: 4px 10px; border-radius: 6px; }
+.modal-section { margin-bottom: 18px; }
+.modal-section h3 { font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 6px; }
+.modal-section p { font-size: 13.5px; color: var(--ink-2); line-height: 1.75; }
+.modal-files { list-style: none; margin-top: 6px; }
+.modal-files li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--blue); padding: 7px 10px; background: var(--blue-soft); border-radius: 8px; margin-bottom: 6px; }
+.file-ico svg { width: 15px; height: 15px; }
+.modal-note { font-size: 11.5px; color: var(--amber); background: var(--amber-soft); padding: 8px 12px; border-radius: 8px; margin-top: 8px; }
+.modal-foot { padding: 14px 28px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; }
+.modal-close-btn { height: 36px; padding: 0 20px; border-radius: 8px; border: 1px solid var(--line); background: #fff; color: var(--ink-2); font-size: 13px; cursor: pointer; }
+.modal-close-btn:hover { border-color: var(--blue); color: var(--blue); }
