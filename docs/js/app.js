@@ -44,10 +44,69 @@ function renderNav() {
 function checklistHTML(page) {
   if (!page.checklist) return '';
   let rows = '';
-  page.checklist.forEach(([name, status]) => {
-    rows += '<div class="check-item"><span class="check-name">' + name + '</span><span class="status-tag">' + status + '</span></div>';
+  page.checklist.forEach((item, idx) => {
+    const name = Array.isArray(item) ? item[0] : item.name;
+    const status = Array.isArray(item) ? item[1] : item.status;
+    const hasContent = !Array.isArray(item) && !!item.content;
+    if (hasContent) {
+      const done = status === '已归档';
+      rows += '<button class="check-item check-btn" data-idx="' + idx + '">' +
+        '<span class="check-name"><span class="check-dot done"></span>' + name + '</span>' +
+        '<span class="check-open">查看内容' + icon('arrow') + '</span>' +
+      '</button>';
+    } else {
+      rows += '<div class="check-item"><span class="check-name"><span class="check-dot"></span>' + name + '</span><span class="status-tag">' + status + '</span></div>';
+    }
   });
   return '<section class="panel"><div class="panel-title">归集清单</div><div class="checklist">' + rows + '</div></section>';
+}
+
+// 生成详情弹窗 HTML
+function modalHTML() {
+  return '<div class="modal" id="modal" aria-hidden="true">' +
+    '<div class="modal-backdrop" data-close="1"></div>' +
+    '<div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modalTitle">' +
+      '<div class="modal-head">' +
+        '<div class="modal-eyebrow" id="modalEyebrow"></div>' +
+        '<h2 class="modal-title" id="modalTitle"></h2>' +
+        '<button class="modal-close" data-close="1" aria-label="关闭">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>' +
+        '</button>' +
+      '</div>' +
+      '<div class="modal-body" id="modalBody"></div>' +
+      '<div class="modal-foot"><button class="modal-close-btn" data-close="1">关闭</button></div>' +
+    '</div>' +
+  '</div>';
+}
+
+// 打开详情弹窗
+function openModal(item) {
+  const c = item.content;
+  document.getElementById('modalEyebrow').textContent = item.name;
+  document.getElementById('modalTitle').textContent = c.title;
+  let body = '<div class="modal-meta">' + (c.meta || []).map(m => '<span>' + m + '</span>').join('') + '</div>';
+  (c.sections || []).forEach(s => {
+    body += '<div class="modal-section"><h3>' + s.heading + '</h3><p>' + s.body + '</p></div>';
+  });
+  if (c.attachments && c.attachments.length) {
+    body += '<div class="modal-section"><h3>相关附件</h3><ul class="modal-files">' +
+      c.attachments.map(a => '<li><span class="file-ico">' + icon('book') + '</span>' + a + '</li>').join('') + '</ul></div>';
+  }
+  if (c.note) body += '<div class="modal-note">' + c.note + '</div>';
+  document.getElementById('modalBody').innerHTML = body;
+  const modal = document.getElementById('modal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.style.overflow = 'hidden';
+}
+
+// 关闭详情弹窗
+function closeModal() {
+  const modal = document.getElementById('modal');
+  if (!modal) return;
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.style.overflow = '';
 }
 
 // 生成表格 HTML
@@ -116,9 +175,18 @@ function renderContent() {
     }
     html += linksHTML(page);
   }
-  el.innerHTML = html;
+  el.innerHTML = html + modalHTML();
   el.querySelectorAll('.card').forEach(btn => {
     btn.addEventListener('click', () => navigate(btn.dataset.target));
+  });
+  el.querySelectorAll('.check-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const item = PAGES[currentPage].checklist[Number(btn.dataset.idx)];
+      if (item && item.content) openModal(item);
+    });
+  });
+  el.querySelectorAll('[data-close]').forEach(el2 => {
+    el2.addEventListener('click', closeModal);
   });
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -158,6 +226,9 @@ function init() {
   renderNav();
   renderContent();
   initSearch();
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
 }
 
 document.addEventListener('DOMContentLoaded', init);
